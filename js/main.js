@@ -1,51 +1,62 @@
 // GitVerse Starter Portfolio Scripts
 
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Copy Email to Clipboard with Toast Notification
-  const copyBtn = document.getElementById('copy-email-btn');
-  const toast = document.getElementById('toast');
+const CONTACT_EMAIL = 'jaganraju24@gmail.com';
 
-  if (copyBtn && toast) {
-    copyBtn.addEventListener('click', () => {
-      const email = copyBtn.getAttribute('data-email') || 'your.email@example.com';
-      navigator.clipboard.writeText(email).then(() => {
-        showToast(`📋 Copied "${email}" to clipboard!`);
-      }).catch(() => {
-        showToast('❌ Failed to copy to clipboard');
-      });
-    });
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  const toast = document.getElementById('toast');
+  let toastTimer;
 
   function showToast(message) {
     if (!toast) return;
     toast.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 2500);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
   }
 
-  // 2. Dark / Light Theme Toggle with LocalStorage Persistence
+  // 1. Copy email to clipboard
+  const copyBtn = document.getElementById('copy-email-btn');
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const email = copyBtn.getAttribute('data-email') || CONTACT_EMAIL;
+      try {
+        await navigator.clipboard.writeText(email);
+        showToast(`Copied ${email}`);
+      } catch (err) {
+        // Clipboard can be blocked by the browser, so show the address instead
+        showToast(`Couldn't copy. My email is ${email}`);
+      }
+    });
+  }
+
+  // 2. Dark / light theme toggle, remembered between visits
   const themeToggle = document.getElementById('theme-toggle');
-  const savedTheme = localStorage.getItem('gitverse-theme') || 'dark';
+  const root = document.documentElement;
 
-  if (savedTheme === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-    if (themeToggle) themeToggle.textContent = '☀️';
-  } else {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    if (themeToggle) themeToggle.textContent = '🌙';
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    if (themeToggle) themeToggle.textContent = theme === 'light' ? '☀️' : '🌙';
   }
+
+  let savedTheme = 'dark';
+  try {
+    savedTheme = localStorage.getItem('gitverse-theme') || 'dark';
+  } catch (err) {
+    // Storage can be unavailable (private mode), so fall back to dark
+  }
+  applyTheme(savedTheme);
 
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('gitverse-theme', newTheme);
-      themeToggle.textContent = newTheme === 'light' ? '☀️' : '🌙';
-      showToast(`Switched to ${newTheme} theme`);
+      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      try {
+        localStorage.setItem('gitverse-theme', next);
+      } catch (err) {
+        // Not critical if the preference can't be saved
+      }
+      showToast(`${next === 'light' ? 'Light' : 'Dark'} theme on`);
     });
   }
 });
