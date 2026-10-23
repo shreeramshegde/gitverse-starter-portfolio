@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (copyBtn && toast) {
     copyBtn.addEventListener('click', () => {
-      const email = copyBtn.getAttribute('data-email') || 'your.email@example.com';
+      const email = copyBtn.getAttribute('data-email') || '2025cs_sumankumari_g@nie.ac.in';
       navigator.clipboard.writeText(email).then(() => {
         showToast(`📋 Copied "${email}" to clipboard!`);
       }).catch(() => {
